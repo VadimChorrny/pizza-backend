@@ -27,7 +27,6 @@ func init() {
 	zeroLogger = Logger()
 }
 
-// Logger returns a zerolog.Logger singleton
 func Logger() *zerolog.Logger {
 	return zeroLogger
 }

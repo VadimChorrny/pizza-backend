@@ -8,8 +8,6 @@ import (
 	"strconv"
 )
 
-const jsonContentType = "application/json"
-
 type Service struct {
 	opts Options
 }
@@ -37,9 +35,10 @@ func (s *Service) Run(ctx context.Context) error {
 	e.HidePort = true
 
 	e.Use(middleware.Logger())
-	e.Use(cors("*"))
+	e.Use(cors("*")) // allow all origins
 
-	e.GET("/api/v1/hello-world", s.helloWorld)
+	e.GET("api/user", s.getUserByEmail)
+	e.POST("api/user", s.createUser)
 
 	addr := ":" + strconv.Itoa(s.opts.HttpPort)
 
@@ -47,6 +46,25 @@ func (s *Service) Run(ctx context.Context) error {
 	return e.Start(addr)
 }
 
-func (s *Service) helloWorld(c echo.Context) error {
-	return c.String(200, "Hello world")
+func (s *Service) createUser(c echo.Context) error {
+	err := s.opts.App.CreateUser()
+	if err != nil {
+		return c.String(500, err.Error())
+	}
+
+	return c.JSON(200, "User created!")
+}
+
+func (s *Service) getUserByEmail(c echo.Context) error {
+	email := c.QueryParams().Get("email")
+	if email == "" {
+		return c.String(400, "Email is required")
+	}
+
+	user, err := s.opts.App.GetUserByEmail(email)
+	if err != nil {
+		return c.String(500, err.Error())
+	}
+
+	return c.JSON(200, user)
 }

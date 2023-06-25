@@ -1,10 +1,10 @@
 package api
 
-import "github.com/pkg/errors"
-
-var ErrInvalidOption = errors.New("invalid option")
+import (
+	"pizza-backend/services"
+)
 
 type Options struct {
-	HttpPort int `option:"required,not-empty"`
-	//App      *app.App `option:"required,not-empty"`
+	HttpPort int           `option:"required,not-empty"`
+	App      *services.App `option:"required,not-empty"`
 }

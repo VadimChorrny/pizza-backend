@@ -7,11 +7,12 @@ import (
 	"gorm.io/gorm/schema"
 	"log"
 	"os"
+	"pizza-backend/storage/models"
 	"time"
 )
 
 type Storage struct {
-	db *gorm.DB
+	Db *gorm.DB
 }
 
 type Config struct {
@@ -54,27 +55,27 @@ func New(url string, config Config) (*Storage, error) {
 		sqlDB.SetConnMaxLifetime(config.ConnMaxLifetime)
 	}
 	return &Storage{
-		db: db,
+		Db: db,
 	}, nil
 }
 
 // DB gets db.
 func (s *Storage) DB() *gorm.DB {
-	return s.db
+	return s.Db
 }
 
 func (s *Storage) Begin() *Storage {
 	return &Storage{
-		db: s.db.Begin(),
+		Db: s.Db.Begin(),
 	}
 }
 
 func (s *Storage) Commit() error {
-	return s.db.Commit().Error
+	return s.Db.Commit().Error
 }
 
 func (s *Storage) Rollback() error {
-	return s.db.Rollback().Error
+	return s.Db.Rollback().Error
 }
 
 func IsNotFound(err error) bool {
@@ -83,4 +84,14 @@ func IsNotFound(err error) bool {
 
 func NotFound() error {
 	return gorm.ErrRecordNotFound
+}
+
+func (s *Storage) CreateUser(user *models.User) error {
+	return s.Db.Create(&user).Error
+}
+
+func (s *Storage) GetUserByEmail(email string) (*models.User, error) {
+	var user models.User
+	err := s.Db.Where("email = ?", email).First(&user).Error
+	return &user, err
 }
